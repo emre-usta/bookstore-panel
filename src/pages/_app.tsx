@@ -7,9 +7,11 @@ import LoginPage from '.';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <><ConfigProvider>
-      <Component {...pageProps} />
-    </ConfigProvider><div className="App">
+    <>
+      <ConfigProvider>
+        <Component {...pageProps} />
+      </ConfigProvider>
+      <div className="App">
         <LoginPage />
       </div> 
     </>
