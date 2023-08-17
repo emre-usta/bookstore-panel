@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Input, Button, Space, Alert, Card, Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { User } from '@/models/User';
+import Cookies from 'js-cookie';
 
 const LoginPage = () => {
   const [username, setUsername] = useState<string>('');
@@ -29,6 +30,14 @@ const LoginPage = () => {
       const user = await whoAmI(result.access_token)
       if (user !== null) {
         setUser(user)
+
+      const previousToken = Cookies.get('my_token');
+      if (previousToken) {
+        Cookies.remove('my_token');
+      }
+
+        const expirationTime = 60;
+        Cookies.set('my_token', result.access_token, { expires: expirationTime / (24 * 60) });
       }
     }
     else {
@@ -37,7 +46,7 @@ const LoginPage = () => {
   };
 
   const whoAmI = async (token: string): Promise<User | null> => {
-    const response = await fetch(`${process.env.AUTH_API_URL}/whoami`, {
+    const response = await fetch(`${process.env.AUTH_API_URL}/whoami`,{
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -59,18 +68,19 @@ const LoginPage = () => {
       {user ?
       <Card title={`${user.firstname} ${user.lastname}`} bordered={false} style={{ width: 300 }}>
         <Avatar size={64} icon={<UserOutlined />} />
-        <p>{user.username}</p>
-        <p>{user.email_address}</p>
-      </Card> :
-      <Space wrap className='login-innfo flex flex-col space-y-2'>
-        <Input type='text' className='w-64' placeholder="Kullanıcı adı" value={username} onChange={(e) => setUsername(e.target.value)} />
-        <Input.Password type='password' className='w-64' placeholder="Parola" value={password} onChange={(e) => setPassword(e.target.value)} />
-        {errorMessage && <Alert message={errorMessage} type="error" className='w-64' showIcon />}
-        <Button className='bg-blue-500 text-white rounded-xl w-24' onClick={handleLogin}>Giriş</Button>
-      </Space>}
+        <p>Kullanıcı ID: {user._id}</p>
+        <p>Kullanıcı E-posta: {user.email_address}</p>
+        <p>Kullanıcı Adı: {user.username}</p>
+        <p>Kullanıcı Rolü: {user.role}</p>
+      </Card> :<>
+        <Space wrap className='login-innfo flex flex-col space-y-2'>
+          <Input type='text' className='w-64' placeholder="Kullanıcı adı" value={username} onChange={(e) => setUsername(e.target.value)} />
+          <Input.Password type='password' className='w-64' placeholder="Parola" value={password} onChange={(e) => setPassword(e.target.value)} />
+          {errorMessage && <Alert message={errorMessage} type="error" className='w-64' showIcon />}
+          <Button className='bg-blue-500 text-white rounded-xl w-24' onClick={handleLogin}>Giriş</Button>
+        </Space></>}
     </main>
   );
 };
 
 export default LoginPage;
-
